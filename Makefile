@@ -1,7 +1,9 @@
-dist/awsgi-0.0.1.tar.gz:
+.PHONY: sdist
+sdist:
 	python setup.py sdist
 
-dist/awsgi-0.0.1-py2-none-any.whl:
+.PHONY: wheel
+wheel:
 	python setup.py bdist_wheel
 
 .PHONY: clean
