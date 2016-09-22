@@ -5,7 +5,7 @@ AWSGI
 A WSGI adapter for AWS API Gateway/Lambda Proxy Integration
 ===========================================================
 
-AWSGI allows you to use WSGI-compatible middleware and frameworks like Flask and Django with the AWS API Gateway/Lambda proxy integration.
+AWSGI allows you to use WSGI-compatible middleware and frameworks like Flask and Django with the `AWS API Gateway/Lambda proxy integration <https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html>`_.
 
 Example
 -------
@@ -25,5 +25,6 @@ Example
     def index():
         return jsonify(status=200, message='OK')
     
+
     def lambda_handler(event, context):
         return awsgi.response(app, event, context)
