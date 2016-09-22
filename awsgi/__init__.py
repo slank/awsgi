@@ -1,6 +1,11 @@
-from urllib import urlencode
 from io import StringIO
 import sys
+try:
+    # Python 3
+    from urllib.parse import urlencode
+except:
+    # Python 2
+    from urllib import urlencode
 
 
 def response(app, event, context):

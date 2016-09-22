@@ -8,7 +8,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='awsgi',
+    name='aws-wsgi',
 
     version='0.0.1',
 

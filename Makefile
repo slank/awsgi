@@ -8,4 +8,4 @@ wheel:
 
 .PHONY: clean
 clean:
-	rm -rf dist build awsgi.egg-info
+	rm -rf dist build aws_wsgi.egg-info
