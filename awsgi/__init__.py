@@ -22,7 +22,7 @@ class StartResponse:
 
     def __call__(self, status, headers, exc_info=None):
         self.status = status.split()[0]
-        self.headers[:] = headers
+        self.headers = headers.copy()
         return self.body.write
 
     def response(self, output):
