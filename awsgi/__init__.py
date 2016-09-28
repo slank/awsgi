@@ -17,12 +17,12 @@ def response(app, event, context):
 class StartResponse:
     def __init__(self):
         self.status = 500
-        self.headers = {}
+        self.headers = []
         self.body = StringIO()
 
     def __call__(self, status, headers, exc_info=None):
         self.status = status.split()[0]
-        self.headers = headers.copy()
+        self.headers[:] = headers
         return self.body.write
 
     def response(self, output):
