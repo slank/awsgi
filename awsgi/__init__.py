@@ -33,10 +33,13 @@ class StartResponse:
             'body': self.body.getvalue(),
         }
 
-        if output:
-            body = bytearray(resp['body'])
-            [body.extend(chunk) for chunk in output]
+        body = None
 
+        for chunk in output:
+            body = body or bytearray(resp['body'])
+            body.extend(chunk)
+
+        if body:
             resp['body'] = base64.b64encode(body)
             resp['isBase64Encoded'] = True
 
