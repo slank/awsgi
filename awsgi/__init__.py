@@ -44,7 +44,7 @@ class StartResponse:
 
 
 def environ(event, context):
-    if event['isBase64Encoded']:
+    if event.get('isBase64Encoded', False) and event.has_key('body'):
         event['body'] = base64.b64decode(event['body'])
 
     environ = {
