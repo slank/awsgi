@@ -53,7 +53,7 @@ def environ(event, context):
         'wsgi.multiprocess': False,
         'wsgi.run_once': False,
     }
-    headers = event.get('headers') or {}
+    headers = event.get('headers', {})
     for k, v in headers.items():
         k = k.title()
         if k == 'Content-Type':
