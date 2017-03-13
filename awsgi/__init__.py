@@ -55,17 +55,19 @@ def environ(event, context):
     }
     headers = event.get('headers', {})
     for k, v in headers.items():
-        k = k.title()
-        if k == 'Content-Type':
+        k = k.upper().replace('-', '_')
+
+        if k == 'CONTENT_TYPE':
             environ['CONTENT_TYPE'] = v
-        if k == 'Host':
+        elif k == 'HOST':
             environ['SERVER_NAME'] = v
-        if k == 'X-Forwarded-For':
+        elif k == 'X_FORWARDED_FOR':
             environ['REMOTE_ADDR'] = v.split(', ')[0]
-        if k == 'X-Forwarded-Proto':
+        elif k == 'X_FORWARDED_PROTO':
             environ['wsgi.url_scheme'] = v
-        if k == 'X-Forwarded-Port':
+        elif k == 'X_FORWARDED_PORT':
             environ['SERVER_PORT'] = v
-        environ['HTTP_' + k.upper().replace('-', '_')] = v
+
+        environ['HTTP_' + k] = v
 
     return environ
