@@ -1,4 +1,5 @@
-from io import StringIO
+import base64
+from io import BytesIO
 import sys
 try:
     # Python 3
@@ -18,7 +19,7 @@ class StartResponse:
     def __init__(self):
         self.status = 500
         self.headers = []
-        self.body = StringIO()
+        self.body = BytesIO()
 
     def __call__(self, status, headers, exc_info=None):
         self.status = status.split()[0]
@@ -31,12 +32,24 @@ class StartResponse:
             'headers': dict(self.headers),
             'body': self.body.getvalue(),
         }
+
+        body = None
+
         for chunk in output:
-            resp['body'] += chunk
+            body = body or bytearray(resp['body'])
+            body.extend(chunk)
+
+        if body:
+            resp['body'] = base64.b64encode(body)
+            resp['isBase64Encoded'] = True
+
         return resp
 
 
 def environ(event, context):
+    if event.get('isBase64Encoded', False) and event.has_key('body'):
+        event['body'] = base64.b64decode(event['body'])
+
     environ = {
         'REQUEST_METHOD': event['httpMethod'],
         'SCRIPT_NAME': '',
@@ -47,7 +60,7 @@ def environ(event, context):
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': StringIO(event.get('body')),
+        'wsgi.input': BytesIO(event.get('body')),
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
