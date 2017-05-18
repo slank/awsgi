@@ -3,9 +3,17 @@ import sys
 try:
     # Python 3
     from urllib.parse import urlencode
+
+    # Convert bytes to str, if required
+    def convert_str(s):
+        return s.decode('utf-8') if isinstance(s, bytes) else s
 except:
     # Python 2
     from urllib import urlencode
+
+    # No conversion required
+    def convert_str(s):
+        return s
 
 
 def response(app, event, context):
@@ -26,14 +34,11 @@ class StartResponse:
         return self.body.write
 
     def response(self, output):
-        resp = {
+        return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
-            'body': self.body.getvalue(),
+            'body': self.body.getvalue() + ''.join(map(convert_str, output)),
         }
-        for chunk in output:
-            resp['body'] += chunk
-        return resp
 
 
 def environ(event, context):
