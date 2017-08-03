@@ -1,0 +1,21 @@
+language: python
+python:
+  - 2.7
+  - 3.6
+script: pytest
+deploy:
+  - provider: pypi
+    user: awsgi-ci
+    password:
+      secure: $PYPI_PASSWORD_ENC
+    on:
+      tags: true
+    distributions: "sdist bdist_wheel"
+  - provider: pypi
+    user: awsgi-ci
+    password:
+      secure: $TESTPYPI_PASSWORD_ENC
+    on:
+      branch: pypi-test
+    distributions: "sdist bdist_wheel"
+    server: https://test.pypi.org/legacy/
