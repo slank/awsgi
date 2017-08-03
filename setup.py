@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 from codecs import open
 from os import path
 
@@ -36,5 +36,5 @@ setup(
     ],
 
     keywords='wsgi aws lambda api gateway',
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    py_modules=['awsgi'],
 )
