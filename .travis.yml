@@ -6,15 +6,14 @@ script: pytest
 deploy:
   - provider: pypi
     user: awsgi-ci
-    password:
-      secure: $PYPI_PASSWORD_ENC
+    password: $PYPI_PASSWORD
     on:
       tags: true
     distributions: "sdist bdist_wheel"
+    server: https://upload.pypi.org/legacy/
   - provider: pypi
     user: awsgi-ci
-    password:
-      secure: $TESTPYPI_PASSWORD_ENC
+    password: $TESTPYPI_PASSWORD
     on:
       branch: pypi-test
     distributions: "sdist bdist_wheel"
