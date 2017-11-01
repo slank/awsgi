@@ -1,20 +1,10 @@
-from io import StringIO
+from io import StringIO, BytesIO
 import sys
-try:
-    # Python 3
-    from urllib.parse import urlencode
+from urllib.parse import urlencode
 
-    # Convert bytes to str, if required
-    def convert_str(s):
-        return s.decode('utf-8') if isinstance(s, bytes) else s
-except:
-    # Python 2
-    from urllib import urlencode
 
-    # No conversion required
-    def convert_str(s):
-        return s
-
+def convert_str(s):
+    return s.decode('utf-8') if isinstance(s, bytes) else s
 
 def response(app, event, context):
     sr = StartResponse()
@@ -52,7 +42,7 @@ def environ(event, context):
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': StringIO(event.get('body')),
+        'wsgi.input': BytesIO(event.get('body', '').encode('utf-8')),
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
