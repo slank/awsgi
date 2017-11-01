@@ -42,7 +42,7 @@ def environ(event, context):
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': BytesIO(event.get('body', '').encode('utf-8')),
+        'wsgi.input': BytesIO((event.get('body', '') or '').encode('utf-8')),
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
