@@ -33,8 +33,8 @@ class StartResponse:
 
     def response(self, output):
         print('===========================')
-        print(self.headers)
-        print(self.body.getvalue())
+        print(f"Headers: {self.headers}")
+        print(f"Body: {self.body.getvalue()}")
 
         return {
             'statusCode': str(self.status),
