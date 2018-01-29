@@ -31,6 +31,8 @@ class StartResponse:
 
     def response(self, output):
         content_type = dict(self.headers).get('Content-Type', None)
+        print('=======================')
+        print(self.headers)
 
         return {
             'statusCode': str(self.status),
