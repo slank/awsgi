@@ -1,14 +1,11 @@
 from io import StringIO, BytesIO
 import sys
 from urllib.parse import urlencode
-from functools import partial
 
 
-def convert_str(headers, s):
+def convert_str(s):
     try:
-        # do not convert fonts
-        convert = dict(headers).get('Content-Type', None) != "application/font-woff"
-        return s.decode('utf-8') if (isinstance(s, bytes) and convert) else s
+        return s.decode('utf-8') if isinstance(s, bytes) else s
     except Exception as e:
         print(s)
         raise e
@@ -36,10 +33,18 @@ class StartResponse:
         print(f"Headers: {self.headers}")
         print(f"Body: {self.body.getvalue()}")
 
+        # do not convert fonts
+        convert = dict(self.headers).get('Content-Type', None) != "application/font-woff"
+
+        if convert:
+            body = ''.join(map(convert_str, output))
+        else:
+            body = ''.join(output)
+
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
-            'body': self.body.getvalue() + ''.join(map(partial(convert_str, self.headers), output)),
+            'body': body
         }
 
 
