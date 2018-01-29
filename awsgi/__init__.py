@@ -35,7 +35,7 @@ class StartResponse:
         print(f"Headers: {self.headers}")
         print(f"Body: {self.body.getvalue()}")
 
-        font = dict(self.headers).get('Content-Type', None) != "application/font-woff"
+        font = dict(self.headers).get('Content-Type', None) == "application/font-woff"
 
         return {
             'statusCode': str(self.status),
