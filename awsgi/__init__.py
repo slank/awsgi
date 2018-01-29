@@ -34,6 +34,7 @@ class StartResponse:
     def response(self, output):
         print('===========================')
         print(self.headers)
+        print(self.body.getvalue())
 
         return {
             'statusCode': str(self.status),
