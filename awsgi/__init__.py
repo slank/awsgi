@@ -5,15 +5,11 @@ from functools import partial
 
 
 def convert_str(content_type, s):
-    try:
-        # do not convert fonts
-        if content_type == "application/font-woff":
-            return str(s)
-        else:
-            return s.decode('utf-8') if isinstance(s, bytes) else s
-    except Exception as e:
-        print(s)
-        raise e
+    # do not decode fonts
+    if content_type == "application/font-woff":
+        return str(s)
+    else:
+        return s.decode('utf-8') if isinstance(s, bytes) else s
 
 
 def response(app, event, context):
@@ -34,10 +30,6 @@ class StartResponse:
         return self.body.write
 
     def response(self, output):
-        print('===========================')
-        print(f"Headers: {self.headers}")
-        print(f"Body: {self.body.getvalue()}")
-
         content_type = dict(self.headers).get('Content-Type', None)
 
         return {
