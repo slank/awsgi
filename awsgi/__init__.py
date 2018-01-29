@@ -5,8 +5,18 @@ from functools import partial
 import base64
 
 
+BINARY_ENCODINGS = [
+    "gzip"
+]
+
+
+BINARY_CONTENT_TYPES = [
+    "application/font-woff"
+]
+
+
 def convert_str(b64, s):
-    # encode gzip using base64
+    # encodes binary data using base64
     if b64:
         return base64.b64encode(s).decode('utf-8')
     else:
@@ -14,7 +24,7 @@ def convert_str(b64, s):
 
 
 def _base64_encode(content_encoding, content_type):
-    return content_encoding == "gzip" or content_type == "application/font-woff"
+    return content_encoding in BINARY_ENCODINGS or content_type in BINARY_CONTENT_TYPES
 
 
 def response(app, event, context):
@@ -38,10 +48,6 @@ class StartResponse:
         content_encoding = dict(self.headers).get('Content-Encoding', None)
         content_type = dict(self.headers).get('Content-Type', None)
         isBase64Encoded = _base64_encode(content_encoding, content_type)
-
-        print('=======================')
-        print(self.headers)
-        print(isBase64Encoded)
 
         return {
             'statusCode': str(self.status),
