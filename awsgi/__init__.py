@@ -4,10 +4,13 @@ from urllib.parse import urlencode
 from functools import partial
 
 
-def convert_str(font, s):
+def convert_str(content_type, s):
     try:
         # do not convert fonts
-        return s.decode('utf-8') if (isinstance(s, bytes) and not font) else s
+        if content_type == "application/font-woff":
+            return str(s)
+        else:
+            return s.decode('utf-8') if isinstance(s, bytes) else s
     except Exception as e:
         print(s)
         raise e
@@ -35,13 +38,12 @@ class StartResponse:
         print(f"Headers: {self.headers}")
         print(f"Body: {self.body.getvalue()}")
 
-        font = dict(self.headers).get('Content-Type', None) == "application/font-woff"
+        content_type = dict(self.headers).get('Content-Type', None)
 
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
-            # 'body': self.body.getvalue() + ''.join(map(partial(convert_str, font), output)),
-            'body': ''.join(map(partial(convert_str, font), output)),
+            'body': self.body.getvalue() + ''.join(map(partial(convert_str, content_type), output)),
         }
 
 
