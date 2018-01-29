@@ -36,6 +36,8 @@ class StartResponse:
         # do not convert fonts
         convert = dict(self.headers).get('Content-Type', None) != "application/font-woff"
 
+        print(f"convert: {convert}")
+
         if convert:
             body = ''.join(map(convert_str, output))
         else:
