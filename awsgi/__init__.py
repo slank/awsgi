@@ -4,7 +4,12 @@ from urllib.parse import urlencode
 
 
 def convert_str(s):
-    return s.decode('utf-8') if isinstance(s, bytes) else s
+    try:
+        return s.decode('utf-8') if isinstance(s, bytes) else s
+    except Exception as e:
+        print(s)
+        raise e
+
 
 def response(app, event, context):
     sr = StartResponse()
