@@ -4,9 +4,9 @@ from urllib.parse import urlencode
 from functools import partial
 
 
-def convert_str(content_type, s):
-    # do not decode fonts
-    if content_type == "application/font-woff":
+def convert_str(content_encoding, s):
+    # do not decode gzip
+    if content_encoding == "gzip":
         return str(s)
     else:
         return s.decode('utf-8') if isinstance(s, bytes) else s
@@ -30,14 +30,14 @@ class StartResponse:
         return self.body.write
 
     def response(self, output):
-        content_type = dict(self.headers).get('Content-Type', None)
+        content_encoding = dict(self.headers).get('Content-Encoding', None)
         print('=======================')
         print(self.headers)
 
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
-            'body': self.body.getvalue() + ''.join(map(partial(convert_str, content_type), output)),
+            'body': self.body.getvalue() + ''.join(map(partial(convert_str, content_encoding), output)),
         }
 
 
