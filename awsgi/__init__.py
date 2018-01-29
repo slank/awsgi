@@ -1,19 +1,30 @@
-from io import StringIO
+from io import StringIO, BytesIO
 import sys
-try:
-    # Python 3
-    from urllib.parse import urlencode
+from urllib.parse import urlencode
+from functools import partial
+import base64
 
-    # Convert bytes to str, if required
-    def convert_str(s):
+
+BINARY_ENCODINGS = [
+    "gzip"
+]
+
+
+BINARY_CONTENT_TYPES = [
+    "application/font-woff"
+]
+
+
+def convert_str(b64, s):
+    # encodes binary data using base64
+    if b64:
+        return base64.b64encode(s).decode('utf-8')
+    else:
         return s.decode('utf-8') if isinstance(s, bytes) else s
-except:
-    # Python 2
-    from urllib import urlencode
 
-    # No conversion required
-    def convert_str(s):
-        return s
+
+def _base64_encode(content_encoding, content_type):
+    return content_encoding in BINARY_ENCODINGS or content_type in BINARY_CONTENT_TYPES
 
 
 def response(app, event, context):
@@ -34,10 +45,15 @@ class StartResponse:
         return self.body.write
 
     def response(self, output):
+        content_encoding = dict(self.headers).get('Content-Encoding', None)
+        content_type = dict(self.headers).get('Content-Type', None)
+        isBase64Encoded = _base64_encode(content_encoding, content_type)
+
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
-            'body': self.body.getvalue() + ''.join(map(convert_str, output)),
+            'body': self.body.getvalue() + ''.join(map(partial(convert_str, isBase64Encoded), output)),
+            'isBase64Encoded': isBase64Encoded
         }
 
 
@@ -52,7 +68,7 @@ def environ(event, context):
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': StringIO(event.get('body')),
+        'wsgi.input': BytesIO((event.get('body', '') or '').encode('utf-8')),
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
