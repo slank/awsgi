@@ -2,12 +2,13 @@ from io import StringIO, BytesIO
 import sys
 from urllib.parse import urlencode
 from functools import partial
+import base64
 
 
 def convert_str(content_encoding, s):
-    # do not decode gzip
+    # encode gzip using base64
     if content_encoding == "gzip":
-        return str(s)
+        return str(base64.b64encode(s))
     else:
         return s.decode('utf-8') if isinstance(s, bytes) else s
 
@@ -34,10 +35,13 @@ class StartResponse:
         print('=======================')
         print(self.headers)
 
+        isBase64Encoded = content_encoding == "gzip"
+
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
             'body': self.body.getvalue() + ''.join(map(partial(convert_str, content_encoding), output)),
+            'isBase64Encoded': isBase64Encoded
         }
 
 
