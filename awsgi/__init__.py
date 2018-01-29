@@ -29,6 +29,9 @@ class StartResponse:
         return self.body.write
 
     def response(self, output):
+        print('===========================')
+        print(self.headers)
+
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
