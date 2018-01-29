@@ -5,12 +5,16 @@ from functools import partial
 import base64
 
 
-def convert_str(content_encoding, s):
+def convert_str(b64, s):
     # encode gzip using base64
-    if content_encoding == "gzip":
+    if b64:
         return base64.b64encode(s).decode('utf-8')
     else:
         return s.decode('utf-8') if isinstance(s, bytes) else s
+
+
+def _base64_encode(content_encoding, content_type):
+    return content_encoding == "gzip" or content_type == "application/font-woff"
 
 
 def response(app, event, context):
@@ -32,15 +36,17 @@ class StartResponse:
 
     def response(self, output):
         content_encoding = dict(self.headers).get('Content-Encoding', None)
+        content_type = dict(self.headers).get('Content-Type', None)
+        isBase64Encoded = _base64_encode(content_encoding, content_type)
+
         print('=======================')
         print(self.headers)
-
-        isBase64Encoded = content_encoding == "gzip"
+        print(isBase64Encoded)
 
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
-            'body': self.body.getvalue() + ''.join(map(partial(convert_str, content_encoding), output)),
+            'body': self.body.getvalue() + ''.join(map(partial(convert_str, isBase64Encoded), output)),
             'isBase64Encoded': isBase64Encoded
         }
 
