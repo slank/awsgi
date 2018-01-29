@@ -8,7 +8,7 @@ import base64
 def convert_str(content_encoding, s):
     # encode gzip using base64
     if content_encoding == "gzip":
-        return str(base64.b64encode(s))
+        return base64.b64encode(s)
     else:
         return s.decode('utf-8') if isinstance(s, bytes) else s
 
@@ -40,7 +40,8 @@ class StartResponse:
         return {
             'statusCode': str(self.status),
             'headers': dict(self.headers),
-            'body': self.body.getvalue() + ''.join(map(partial(convert_str, content_encoding), output)),
+            # 'body': self.body.getvalue() + ''.join(map(partial(convert_str, content_encoding), output)),
+            'body': ''.join(map(partial(convert_str, content_encoding), output)),
             'isBase64Encoded': isBase64Encoded
         }
 
