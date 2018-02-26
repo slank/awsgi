@@ -1,4 +1,4 @@
-from io import StringIO
+from io import BytesIO, StringIO
 import sys
 try:
     # Python 3
@@ -52,7 +52,7 @@ def environ(event, context):
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': StringIO(event.get('body')),
+        'wsgi.input': BytesIO((event.get('body') or '').encode('utf-8')),
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
