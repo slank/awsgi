@@ -57,6 +57,8 @@ def environ(event, context):
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
         'wsgi.run_once': False,
+        'awsgi.event': event,
+        'awsgi.context': context,
     }
     headers = event.get('headers', {})
     for k, v in headers.items():
