@@ -47,6 +47,7 @@ class TestAwsgi(unittest.TestCase):
                 'X-forwarded-port': '12345',
             },
         }
+        context = object()
         expected = {
             'REQUEST_METHOD': event['httpMethod'],
             'SCRIPT_NAME': '',
@@ -72,8 +73,10 @@ class TestAwsgi(unittest.TestCase):
             'SERVER_PORT': event['headers']['X-forwarded-port'],
             'HTTP_X_FORWARDED_PORT': event['headers']['X-forwarded-port'],
             'HTTP_X_TEST_SUITE': event['headers']['X-test-suite'],
+            'awsgi.event': event,
+            'awsgi.context': context
         }
-        result = awsgi.environ(event, object())
+        result = awsgi.environ(event, context)
         self.addTypeEqualityFunc(StringIO, self.compareStringIOContents)
         for k, v in result.items():
             self.assertEqual(v, expected[k])
