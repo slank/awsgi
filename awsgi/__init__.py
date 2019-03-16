@@ -63,6 +63,13 @@ def environ(event, context):
         'awsgi.event': event,
         'awsgi.context': context,
     }
+
+    request_context = event.get('requestContext')
+    if request_context:
+        remote_user = request_context.get('authorizer', {}).get('principalId')
+        if remote_user:
+            environ['REMOTE_USER'] = remote_user
+
     headers = event.get('headers', {})
     for k, v in headers.items():
         k = k.upper().replace('-', '_')
