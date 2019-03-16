@@ -19,7 +19,7 @@ class TestAwsgi(unittest.TestCase):
 
     def verify_environ(self, expected, result):
         self.addTypeEqualityFunc(StringIO, self.compareStringIOContents)
-        self.assertEqual(result.keys(), expected.keys())
+        self.assertEqual(set(result.keys()), set(expected.keys()))
         for k, v in result.items():
             self.assertEqual(v, expected[k])
 
