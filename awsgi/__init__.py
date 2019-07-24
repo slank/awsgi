@@ -1,4 +1,5 @@
 from io import StringIO
+from base64 import b64encode
 import sys
 try:
     # Python 3
@@ -16,17 +17,28 @@ except:
         return s
 
 
-def response(app, event, context):
-    sr = StartResponse()
+def convert_b46(s):
+    return b64encode(s).decode('ascii')
+
+
+def response(app, event, context, base64_content_types=None):
+    sr = StartResponse(base64_content_types=base64_content_types)
     output = app(environ(event, context), sr)
     return sr.response(output)
 
 
 class StartResponse:
-    def __init__(self):
+    def __init__(self, base64_content_types=None):
+        '''
+        Args:
+            base64_content_types (set): Set of HTTP Content-Types which should
+            return a base64 encoded body. Enables returning binary content from
+            API Gateway.
+        '''
         self.status = 500
         self.headers = []
         self.body = StringIO()
+        self.base64_content_types = set(base64_content_types) or set()
 
     def __call__(self, status, headers, exc_info=None):
         self.status = status.split()[0]
@@ -34,11 +46,19 @@ class StartResponse:
         return self.body.write
 
     def response(self, output):
+        headers = dict(self.headers)
+        is_b64 = headers.get('Content-Type') in self.base64_content_types
+
+        if is_b64:
+            converted_output = ''.join(map(convert_b46, output))
+        else:
+            converted_output = ''.join(map(convert_str, output))
+
         return {
-            'isBase64Encoded': False,
+            'isBase64Encoded': is_b64,
             'statusCode': str(self.status),
-            'headers': dict(self.headers),
-            'body': self.body.getvalue() + ''.join(map(convert_str, output)),
+            'headers': headers,
+            'body': self.body.getvalue() + converted_output,
         }
 
 
