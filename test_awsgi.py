@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from io import StringIO
+from io import StringIO, BytesIO
 import sys
 import unittest
 try:
@@ -80,3 +80,25 @@ class TestAwsgi(unittest.TestCase):
         self.addTypeEqualityFunc(StringIO, self.compareStringIOContents)
         for k, v in result.items():
             self.assertEqual(v, expected[k])
+
+    def test_response_base64_content_type(self):
+        event = {
+            "path": "/image.png",
+            "httpMethod": "GET",
+            "headers": {
+                "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+                "X-Forwarded-For": "first, second",
+                "X-Forwarded-Port": "12345",
+                "X-Forwarded-Proto": "https",
+            },
+        }
+        context = object()
+        sr = awsgi.StartResponse(
+            base64_content_types={"image/png"}
+        )
+        sr("200 OK", [("Content-Type", "image/png")])
+        output = BytesIO(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xc8")
+
+        result = sr.response(output)
+        self.assertTrue(result["isBase64Encoded"])
+        self.assertEqual(result["body"], "iVBORw0KGgo=AAAADUlIRFIAAADI")
