@@ -80,6 +80,7 @@ def environ(event, context):
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
         'wsgi.run_once': False,
+        'wsgi.url_scheme': '',
         'awsgi.event': event,
         'awsgi.context': context,
     }
