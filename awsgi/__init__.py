@@ -8,7 +8,7 @@ try:
     # Convert bytes to str, if required
     def convert_str(s):
         return s.decode('utf-8') if isinstance(s, bytes) else s
-except:
+except ImportError:
     # Python 2
     from urllib import urlencode
 
