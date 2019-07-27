@@ -68,7 +68,7 @@ def environ(event, context):
         bodyobj = BytesIO(body)
     else:
         body = event.get('body', '') or ''
-        bodyobj = StringIO()
+        bodyobj = StringIO(body)
 
     environ = {
         'REQUEST_METHOD': event['httpMethod'],
