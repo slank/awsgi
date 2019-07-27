@@ -36,12 +36,14 @@ class StartResponse:
             API Gateway.
         '''
         self.status = 500
+        self.status_line = '500 Internal Server Error'
         self.headers = []
         self.body = StringIO()
         self.base64_content_types = set(base64_content_types) or set()
 
     def __call__(self, status, headers, exc_info=None):
-        self.status = status.split()[0]
+        self.status_line = status
+        self.status = int(status.split()[0])
         self.headers[:] = headers
         return self.body.write
 
@@ -56,7 +58,8 @@ class StartResponse:
 
         return {
             'isBase64Encoded': is_b64,
-            'statusCode': str(self.status),
+            'statusCode': int(self.status),
+            'statusDescription': self.status_line,
             'headers': headers,
             'body': self.body.getvalue() + converted_output,
         }
