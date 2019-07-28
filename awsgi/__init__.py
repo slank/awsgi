@@ -137,7 +137,7 @@ def environ(event, context):
 
 
 def select_impl(event, context):
-    if 'elb' in context:
+    if 'elb' in event['requestContext']:
         return environ, StartResponse_ELB
     else:
         return environ, StartResponse_GW
