@@ -67,8 +67,9 @@ def environ(event, context):
         body = b64decode(event.get('body', '') or '')
         bodyobj = BytesIO(body)
     else:
+        # FIXME: Flag the encoding in the headers
         body = event.get('body', '') or ''
-        bodyobj = StringIO(body)
+        bodyobj = BytesIO(body.encode('utf-8'))
 
     environ = {
         'REQUEST_METHOD': event['httpMethod'],
