@@ -1,5 +1,7 @@
-from io import StringIO
+from io import StringIO, BytesIO
 from base64 import b64encode
+import itertools
+import collections
 import sys
 try:
     # Python 3
@@ -16,15 +18,11 @@ except ImportError:
     def convert_str(s):
         return s
 
+__all__ = 'response',
+
 
 def convert_b46(s):
     return b64encode(s).decode('ascii')
-
-
-def response(app, event, context, base64_content_types=None):
-    sr = StartResponse(base64_content_types=base64_content_types)
-    output = app(environ(event, context), sr)
-    return sr.response(output)
 
 
 class StartResponse:
@@ -38,31 +36,63 @@ class StartResponse:
         self.status = 500
         self.status_line = '500 Internal Server Error'
         self.headers = []
-        self.body = StringIO()
+        self.chunks = collections.deque()
         self.base64_content_types = set(base64_content_types) or set()
 
     def __call__(self, status, headers, exc_info=None):
         self.status_line = status
         self.status = int(status.split()[0])
         self.headers[:] = headers
-        return self.body.write
+        return self.chunks.append
 
-    def response(self, output):
-        headers = dict(self.headers)
-        is_b64 = headers.get('Content-Type') in self.base64_content_types
+    def use_binary_response(self, headers, body):
+        return headers.get('Content-Type') in self.base64_content_types
+
+    def build_body(self, headers, output):
+        totalbody = b''.join(itertools.chain(
+            self.chunks, output,
+        ))
+
+        is_b64 = self.use_binary_response(headers, totalbody)
 
         if is_b64:
-            converted_output = ''.join(map(convert_b46, output))
+            converted_output = convert_b46(totalbody)
         else:
-            converted_output = ''.join(map(convert_str, output))
+            converted_output = convert_str(totalbody)
 
         return {
             'isBase64Encoded': is_b64,
-            'statusCode': int(self.status),
-            'statusDescription': self.status_line,
-            'headers': headers,
-            'body': self.body.getvalue() + converted_output,
+            'body': converted_output,
         }
+
+    def response(self, output):
+        headers = dict(self.headers)
+
+        rv = {
+            'statusCode': self.status,
+            'headers': headers,
+        }
+        rv.update(self.build_body(headers, output))
+        return rv
+
+
+class StartResponse_GW(StartResponse):
+    def response(self, output):
+        rv = super().response(output)
+
+        rv['statusCode'] = str(rv['statusCode'])
+
+        return rv
+
+
+class StartResponse_ELB(StartResponse):
+    def response(self, output):
+        rv = super().response(output)
+
+        rv['statusCode'] = int(rv['statusCode'])
+        rv['statusDescription'] = self.status_line
+
+        return rv
 
 
 def environ(event, context):
@@ -104,3 +134,18 @@ def environ(event, context):
         environ['HTTP_' + k] = v
 
     return environ
+
+
+def select_impl(event, context):
+    if 'elb' in context:
+        return environ, StartResponse_ELB
+    else:
+        return environ, StartResponse_GW
+
+
+def response(app, event, context, base64_content_types=None):
+    environ, StartResponse = select_impl(event, context)
+
+    sr = StartResponse(base64_content_types=base64_content_types)
+    output = app(environ(event, context), sr)
+    return sr.response(output)

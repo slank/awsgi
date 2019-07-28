@@ -101,4 +101,4 @@ class TestAwsgi(unittest.TestCase):
 
         result = sr.response(output)
         self.assertTrue(result["isBase64Encoded"])
-        self.assertEqual(result["body"], "iVBORw0KGgo=AAAADUlIRFIAAADI")
+        self.assertEqual(result["body"], 'iVBORw0KGgoAAAANSUhEUgAAAMg=')
