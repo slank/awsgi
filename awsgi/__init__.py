@@ -64,12 +64,12 @@ class StartResponse:
 
 def environ(event, context):
     if event.get('isBase64Encoded', False):
-        body = b64decode(event.get('body', '') or '')
-        bodyobj = BytesIO(body)
+        body_buffer = b64decode(event.get('body', '') or '')
+        body_file = BytesIO(body_buffer)
     else:
         # FIXME: Flag the encoding in the headers
-        body = event.get('body', '') or ''
-        bodyobj = BytesIO(body.encode('utf-8'))
+        body_buffer = event.get('body', '') or ''
+        body_file = BytesIO(body_buffer.encode('utf-8'))
 
     environ = {
         'REQUEST_METHOD': event['httpMethod'],
@@ -79,11 +79,11 @@ def environ(event, context):
         'PATH_INFO': event['path'],
         'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
         'REMOTE_ADDR': '127.0.0.1',
-        'CONTENT_LENGTH': str(len(body)),
+        'CONTENT_LENGTH': str(len(body_buffer)),
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': bodyobj,
+        'wsgi.input': body_file,
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
