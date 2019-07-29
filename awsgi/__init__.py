@@ -1,5 +1,5 @@
-from io import StringIO
-from base64 import b64encode
+from io import StringIO, BytesIO
+from base64 import b64encode, b64decode
 import sys
 try:
     # Python 3
@@ -63,6 +63,14 @@ class StartResponse:
 
 
 def environ(event, context):
+    if event.get('isBase64Encoded', False):
+        body_buffer = b64decode(event.get('body', '') or '')
+        body_file = BytesIO(body_buffer)
+    else:
+        # FIXME: Flag the encoding in the headers
+        body_buffer = event.get('body', '') or ''
+        body_file = BytesIO(body_buffer.encode('utf-8'))
+
     environ = {
         'REQUEST_METHOD': event['httpMethod'],
         'SCRIPT_NAME': '',
@@ -71,11 +79,11 @@ def environ(event, context):
         'PATH_INFO': event['path'],
         'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
         'REMOTE_ADDR': '127.0.0.1',
-        'CONTENT_LENGTH': str(len(event.get('body', '') or '')),
+        'CONTENT_LENGTH': str(len(body_buffer)),
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': StringIO(event.get('body')),
+        'wsgi.input': body_file,
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,
