@@ -38,7 +38,7 @@ class StartResponse:
         self.status = 500
         self.headers = []
         self.body = StringIO()
-        self.base64_content_types = set(base64_content_types) or set()
+        self.base64_content_types = set(base64_content_types or []) or set()
 
     def __call__(self, status, headers, exc_info=None):
         self.status = status.split()[0]
