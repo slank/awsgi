@@ -21,14 +21,8 @@ import awsgi
 
 class TestAwsgi(unittest.TestCase):
     def compareStringIOContents(self, a, b, msg=None):
-        a_loc = a.tell()
-        b_loc = b.tell()
-        a.seek(0)
-        b.seek(0)
-        if a.read() != b.read():
+        if a.getvalue() != b.getvalue():
             raise self.failureException(msg)
-        a.seek(a_loc)
-        b.seek(b_loc)
 
     def test_environ(self):
         event = {
@@ -57,7 +51,7 @@ class TestAwsgi(unittest.TestCase):
             'HTTP': 'on',
             'SERVER_PROTOCOL': 'HTTP/1.1',
             'wsgi.version': (1, 0),
-            'wsgi.input': StringIO(event['body']),
+            'wsgi.input': BytesIO(event['body'].encode('utf-8')),
             'wsgi.errors': sys.stderr,
             'wsgi.multithread': False,
             'wsgi.multiprocess': False,
@@ -78,6 +72,7 @@ class TestAwsgi(unittest.TestCase):
         }
         result = awsgi.environ(event, context)
         self.addTypeEqualityFunc(StringIO, self.compareStringIOContents)
+        self.addTypeEqualityFunc(BytesIO, self.compareStringIOContents)
         for k, v in result.items():
             self.assertEqual(v, expected[k])
 
