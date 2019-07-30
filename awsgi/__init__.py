@@ -1,4 +1,4 @@
-from io import StringIO, BytesIO
+from io import BytesIO
 from base64 import b64encode, b64decode
 import itertools
 import collections
