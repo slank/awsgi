@@ -125,7 +125,7 @@ def environ(event, context):
         'awsgi.event': event,
         'awsgi.context': context,
     }
-    headers = event.get('headers', {})
+    headers = event.get('headers', {}) or {}
     for k, v in headers.items():
         k = k.upper().replace('-', '_')
 
