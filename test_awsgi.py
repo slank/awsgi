@@ -82,7 +82,6 @@ class TestAwsgi(unittest.TestCase):
             'awsgi.context': context
         }
         result = awsgi.environ(event, context)
-        self.addTypeEqualityFunc(StringIO, self.compareStringIOContents)
         self.addTypeEqualityFunc(BytesIO, self.compareStringIOContents)
         for k, v in result.items():
             self.assertEqual(v, expected[k])
