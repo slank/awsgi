@@ -1,21 +1,32 @@
 # -*- coding: utf-8 -*-
-from io import StringIO, BytesIO
 import sys
 import unittest
 try:
     # Python 3
     from urllib.parse import urlencode
+    from io import BytesIO
 
     # Convert bytes to str, if required
     def convert_str(s):
         return s.decode('utf-8') if isinstance(s, bytes) else s
-except:
+
+    # Convert str to bytes, if required
+    def convert_byte(b):
+        return b.encode('utf-8', errors='strict') if (
+            isinstance(b, str)) else b
+except ImportError:
     # Python 2
     from urllib import urlencode
+    from cStringIO import StringIO as BytesIO
 
     # No conversion required
     def convert_str(s):
         return s
+
+    # Convert str to bytes, if required
+    def convert_byte(b):
+        return b.encode('utf-8', errors='strict') if (
+            isinstance(b, (str, unicode))) else b
 import awsgi
 
 
