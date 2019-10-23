@@ -1,11 +1,11 @@
 from base64 import b64encode, b64decode
+from io import BytesIO
 import itertools
 import collections
 import sys
 try:
     # Python 3
     from urllib.parse import urlencode
-    from io import BytesIO
 
     # Convert bytes to str, if required
     def convert_str(s):
@@ -18,7 +18,6 @@ try:
 except ImportError:
     # Python 2
     from urllib import urlencode
-    from cStringIO import StringIO as BytesIO
 
     # No conversion required
     def convert_str(s):
