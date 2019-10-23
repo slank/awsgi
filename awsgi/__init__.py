@@ -1,5 +1,5 @@
-from io import BytesIO
 from base64 import b64encode, b64decode
+from io import BytesIO
 import itertools
 import collections
 import sys
@@ -10,6 +10,11 @@ try:
     # Convert bytes to str, if required
     def convert_str(s):
         return s.decode('utf-8') if isinstance(s, bytes) else s
+
+    # Convert str to bytes, if required
+    def convert_byte(b):
+        return b.encode('utf-8', errors='strict') if (
+            isinstance(b, str)) else b
 except ImportError:
     # Python 2
     from urllib import urlencode
@@ -17,6 +22,11 @@ except ImportError:
     # No conversion required
     def convert_str(s):
         return s
+
+    # Convert str to bytes, if required
+    def convert_byte(b):
+        return b.encode('utf-8', errors='strict') if (
+            isinstance(b, (str, unicode))) else b
 
 __all__ = 'response',
 
@@ -96,13 +106,12 @@ class StartResponse_ELB(StartResponse):
 
 
 def environ(event, context):
+    body = event.get('body', '') or ''
+
     if event.get('isBase64Encoded', False):
-        body_buffer = b64decode(event.get('body', '') or '')
-        body_file = BytesIO(body_buffer)
-    else:
-        # FIXME: Flag the encoding in the headers
-        body_buffer = event.get('body', '') or ''
-        body_file = BytesIO(body_buffer.encode('utf-8'))
+        body = b64decode(body)
+    # FIXME: Flag the encoding in the headers
+    body = convert_byte(body)
 
     environ = {
         'REQUEST_METHOD': event['httpMethod'],
@@ -112,11 +121,11 @@ def environ(event, context):
         'PATH_INFO': event['path'],
         'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
         'REMOTE_ADDR': '127.0.0.1',
-        'CONTENT_LENGTH': str(len(body_buffer)),
+        'CONTENT_LENGTH': str(len(body)),
         'HTTP': 'on',
         'SERVER_PROTOCOL': 'HTTP/1.1',
         'wsgi.version': (1, 0),
-        'wsgi.input': body_file,
+        'wsgi.input': BytesIO(body),
         'wsgi.errors': sys.stderr,
         'wsgi.multithread': False,
         'wsgi.multiprocess': False,

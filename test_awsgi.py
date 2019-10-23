@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from io import StringIO, BytesIO
+from io import BytesIO
 import sys
 import unittest
 try:
@@ -9,13 +9,23 @@ try:
     # Convert bytes to str, if required
     def convert_str(s):
         return s.decode('utf-8') if isinstance(s, bytes) else s
-except:
+
+    # Convert str to bytes, if required
+    def convert_byte(b):
+        return b.encode('utf-8', errors='strict') if (
+            isinstance(b, str)) else b
+except ImportError:
     # Python 2
     from urllib import urlencode
 
     # No conversion required
     def convert_str(s):
         return s
+
+    # Convert str to bytes, if required
+    def convert_byte(b):
+        return b.encode('utf-8', errors='strict') if (
+            isinstance(b, (str, unicode))) else b
 import awsgi
 
 
@@ -71,7 +81,6 @@ class TestAwsgi(unittest.TestCase):
             'awsgi.context': context
         }
         result = awsgi.environ(event, context)
-        self.addTypeEqualityFunc(StringIO, self.compareStringIOContents)
         self.addTypeEqualityFunc(BytesIO, self.compareStringIOContents)
         for k, v in result.items():
             self.assertEqual(v, expected[k])
