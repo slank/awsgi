@@ -113,13 +113,29 @@ def environ(event, context):
     # FIXME: Flag the encoding in the headers
     body = convert_byte(body)
 
+    queryString = []
+
+    multiValueQueryStringParameters = event.get('multiValueQueryStringParameters', {})
+    queryStringParameters = event.get('queryStringParameters', {})
+    
+    if (multiValueQueryStringParameters != None):
+        for k in multiValueQueryStringParameters:
+            if (isinstance(multiValueQueryStringParameters[k], list)):
+                for i in multiValueQueryStringParameters[k]:
+                    queryString.append((k, i))
+            else:
+                queryString.append((k, multiValueQueryStringParameters[k]))
+    else:
+        queryString = [(k, v) for k, v in queryStringParameters.items()]
+
+
     environ = {
         'REQUEST_METHOD': event['httpMethod'],
         'SCRIPT_NAME': '',
         'SERVER_NAME': '',
         'SERVER_PORT': '',
         'PATH_INFO': event['path'],
-        'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
+        'QUERY_STRING': urlencode(queryString),
         'REMOTE_ADDR': '127.0.0.1',
         'CONTENT_LENGTH': str(len(body)),
         'HTTP': 'on',
