@@ -35,7 +35,7 @@ def convert_b46(s):
     return b64encode(s).decode('ascii')
 
 
-class StartResponse:
+class StartResponse(object):
     def __init__(self, base64_content_types=None):
         '''
         Args:
@@ -88,7 +88,7 @@ class StartResponse:
 
 class StartResponse_GW(StartResponse):
     def response(self, output):
-        rv = super().response(output)
+        rv = super(StartResponse_GW, self).response(output)
 
         rv['statusCode'] = str(rv['statusCode'])
 
@@ -97,7 +97,7 @@ class StartResponse_GW(StartResponse):
 
 class StartResponse_ELB(StartResponse):
     def response(self, output):
-        rv = super().response(output)
+        rv = super(StartResponse_ELB, self).response(output)
 
         rv['statusCode'] = int(rv['statusCode'])
         rv['statusDescription'] = self.status_line
