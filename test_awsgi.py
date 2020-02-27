@@ -191,3 +191,23 @@ class TestAwsgi(unittest.TestCase):
         environ, StartResponse = awsgi.select_impl(event, context)
         self.assertIs(environ, awsgi.environ)
         self.assertIs(StartResponse, awsgi.StartResponse_GW)
+
+    def test_super_call(self):
+        """
+        Test StartResponse_ELB and StartResponse_GW can response
+        """
+        sr = awsgi.StartResponse_ELB()
+        sr("200 OK", [("Content-Type", "text/html")])
+        output = BytesIO()
+        result = sr.response(output)
+        self.assertEqual(result['statusDescription'], '200 OK')
+
+        sr = awsgi.StartResponse_GW()
+        sr("200 OK", [("Content-Type", "text/html")])
+        output = BytesIO()
+        result = sr.response(output)
+        self.assertEqual(result['statusCode'], '200')
+
+
+if __name__ == "__main__":
+    unittest.main()
