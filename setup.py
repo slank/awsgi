@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='aws-wsgi',
 
-    version='0.2.4',
+    version='0.2.5',
 
     description='WSGI adapter for AWS API Gateway/Lambda Proxy Integration',
     long_description=long_description,
