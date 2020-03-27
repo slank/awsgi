@@ -56,7 +56,10 @@ class StartResponse(object):
         return self.chunks.append
 
     def use_binary_response(self, headers, body):
-        return headers.get('Content-Type') in self.base64_content_types
+        content_type = headers.get('Content-Type')
+        if ';' in content_type:
+            content_type = content_type.split(';')[0]
+        return content_type in self.base64_content_types
 
     def build_body(self, headers, output):
         totalbody = b''.join(itertools.chain(
