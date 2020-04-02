@@ -57,7 +57,8 @@ class StartResponse(object):
 
     def use_binary_response(self, headers, body):
         content_type = headers.get('Content-Type')
-        if ';' in content_type:
+
+        if content_type and ';' in content_type:
             content_type = content_type.split(';')[0]
         return content_type in self.base64_content_types
 
