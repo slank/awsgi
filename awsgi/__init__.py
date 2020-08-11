@@ -117,13 +117,22 @@ def environ(event, context):
     # FIXME: Flag the encoding in the headers
     body = convert_byte(body)
 
+    http_method = ''
+    http_path = ''
+    if event.get('version') == '1.0':
+        http_method = event['httpMethod']
+        http_path = event['path']
+    else:
+        http_method = event['requestContext']['http']['method']
+        http_path = event['requestContext']['http']['path']
+
     environ = {
-        'REQUEST_METHOD': event['httpMethod'],
+        'REQUEST_METHOD': http_method,
         'SCRIPT_NAME': '',
         'SERVER_NAME': '',
         'SERVER_PORT': '',
-        'PATH_INFO': event['path'],
-        'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
+        'PATH_INFO': http_path,
+        'QUERY_STRING': urlencode(event.get('queryStringParameters', {})),
         'REMOTE_ADDR': '127.0.0.1',
         'CONTENT_LENGTH': str(len(body)),
         'HTTP': 'on',
@@ -138,6 +147,7 @@ def environ(event, context):
         'awsgi.event': event,
         'awsgi.context': context,
     }
+
     headers = event.get('headers', {}) or {}
     for k, v in headers.items():
         k = k.upper().replace('-', '_')
