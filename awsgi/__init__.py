@@ -110,6 +110,10 @@ class StartResponse_ELB(StartResponse):
 
 
 def environ(event, context):
+    
+    # Check if format version is in v2
+    is_v2 = '2.0' in event.get('version', {})
+
     body = event.get('body', '') or ''
 
     if event.get('isBase64Encoded', False):
@@ -117,12 +121,14 @@ def environ(event, context):
     # FIXME: Flag the encoding in the headers
     body = convert_byte(body)
 
+    """
+    """
     environ = {
-        'REQUEST_METHOD': event['httpMethod'],
+        'REQUEST_METHOD': event['requestContext']['http']['method'] if is_v2 else event['httpMethod'],
         'SCRIPT_NAME': '',
         'SERVER_NAME': '',
         'SERVER_PORT': '',
-        'PATH_INFO': event['path'],
+        'PATH_INFO': event['requestContext']['http']['path'] if is_v2 else event['path'],
         'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
         'REMOTE_ADDR': '127.0.0.1',
         'CONTENT_LENGTH': str(len(body)),
@@ -157,8 +163,8 @@ def environ(event, context):
 
     return environ
 
-
 def select_impl(event, context):
+    
     if 'elb' in event.get('requestContext', {}):
         return environ, StartResponse_ELB
     else:
