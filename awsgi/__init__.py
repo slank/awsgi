@@ -134,7 +134,7 @@ class StartResponse_ELB(StartResponse):
 
 def environ(event, context):
     
-    # Check if format version is in v2
+    # Check if format version is in v2, used for determining where to retrieve http method and path
     is_v2 = '2.0' in event.get('version', {})
 
     body = event.get('body', '') or ''
@@ -144,7 +144,8 @@ def environ(event, context):
     # FIXME: Flag the encoding in the headers
     body = convert_byte(body)
 
-    query_string = event['queryStringParameters'] or {}
+    # Use get() to access queryStringParameter field without throwing error if it doesn't exist
+    query_string = event.get('queryStringParameters') or {}
     if 'multiValueQueryStringParameters' in event and event['multiValueQueryStringParameters']:
         query_string = []
         for key in event['multiValueQueryStringParameters']:
@@ -152,6 +153,7 @@ def environ(event, context):
                 query_string.append((key, value))
 
     environ = {
+        # Get http method from within requestContext.http field in V2 format
         'REQUEST_METHOD': event['requestContext']['http']['method'] if is_v2 else event['httpMethod'],
         'SCRIPT_NAME': '',
         'SERVER_NAME': '',
