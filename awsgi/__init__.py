@@ -111,7 +111,7 @@ class StartResponse_ELB(StartResponse):
 
 def environ(event, context):
     
-    # Check if format version is in v2
+    # Check if format version is in v2, used for determining where to retrieve http method and path
     is_v2 = '2.0' in event.get('version', {})
 
     body = event.get('body', '') or ''
@@ -120,16 +120,16 @@ def environ(event, context):
         body = b64decode(body)
     # FIXME: Flag the encoding in the headers
     body = convert_byte(body)
-
-    """
-    """
     environ = {
+        # Get http method from within requestContext.http field in V2 format
         'REQUEST_METHOD': event['requestContext']['http']['method'] if is_v2 else event['httpMethod'],
         'SCRIPT_NAME': '',
         'SERVER_NAME': '',
         'SERVER_PORT': '',
+        # Get path from within requestContext.http field in V2 format
         'PATH_INFO': event['requestContext']['http']['path'] if is_v2 else event['path'],
-        'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
+        # Use get() to access queryStringParameter field without throwing error if it doesn't exist
+        'QUERY_STRING': urlencode(event.get('queryStringParameters') or {}),
         'REMOTE_ADDR': '127.0.0.1',
         'CONTENT_LENGTH': str(len(body)),
         'HTTP': 'on',
