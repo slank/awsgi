@@ -14,8 +14,11 @@ Installation
 
     pip install aws-wsgi
 
-Example
--------
+Examples
+--------
+
+Flask
+=====
 
 .. code-block:: python
 
@@ -35,3 +38,24 @@ Example
 
     def lambda_handler(event, context):
         return awsgi.response(app, event, context, base64_content_types={"image/png"})
+
+Django
+======
+
+.. code-block:: python
+
+    import os
+    import awsgi
+
+    from django.core.wsgi import get_wsgi_application
+
+    # my_app_directory/settings.py is a vanilla Django settings file, created by "django-admin startproject".
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'my_app_directory.settings')
+    # In the settings.py file, you may find it useful to include this setting to remove
+    # Django's need for SQLite, which is currently (2020-11-17) outdated in the Lambda runtime image
+    # DATABASES = { 'default': { 'ENGINE': 'django.db.backends.dummy', } }
+
+    application = get_wsgi_application()
+
+    def lambda_handler(event, context):
+        return awsgi.response(application, event, context, base64_content_types={"image/png"})
