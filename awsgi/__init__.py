@@ -5,7 +5,7 @@ import collections
 import sys
 try:
     # Python 3
-    from urllib.parse import urlencode
+    from urllib.parse import urlencode, unquote
 
     # Convert bytes to str, if required
     def convert_str(s):
@@ -15,9 +15,16 @@ try:
     def convert_byte(b):
         return b.encode('utf-8', errors='strict') if (
             isinstance(b, str)) else b
+
+    def clean_path_string(path):
+        """
+        Some WSGI applications expect paths to be unquoted before receiving them
+        """
+        return unquote(path)
+
 except ImportError:
     # Python 2
-    from urllib import urlencode
+    from urllib import urlencode, unquote
 
     # No conversion required
     def convert_str(s):
@@ -27,6 +34,12 @@ except ImportError:
     def convert_byte(b):
         return b.encode('utf-8', errors='strict') if (
             isinstance(b, (str, unicode))) else b
+
+    def clean_path_string(path):
+        """
+        Some WSGI applications expect paths to be unquoted before receiving them
+        """
+        return unquote(path)
 
 __all__ = 'response',
 
@@ -122,7 +135,7 @@ def environ(event, context):
         'SCRIPT_NAME': '',
         'SERVER_NAME': '',
         'SERVER_PORT': '',
-        'PATH_INFO': event['path'],
+        'PATH_INFO': clean_path_string(event['path']),
         'QUERY_STRING': urlencode(event['queryStringParameters'] or {}),
         'REMOTE_ADDR': '127.0.0.1',
         'CONTENT_LENGTH': str(len(body)),
