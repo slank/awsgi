@@ -9,7 +9,10 @@ try:
 
     # Convert bytes to str, if required
     def convert_str(s):
-        return s.decode('utf-8') if isinstance(s, bytes) else s
+        try:
+            return s.decode('utf-8') if isinstance(s, bytes) else s
+        except UnicodeDecodeError:
+            return s.encode("latin-1").decode("utf-8")
 
     # Convert str to bytes, if required
     def convert_byte(b):
