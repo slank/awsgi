@@ -52,11 +52,14 @@ def convert_b46(s):
 
 
 class StartResponse(object):
-    def __init__(self, base64_content_types=None):
+    def __init__(self, base64_content_types=None, base64_content_encoding=None):
         '''
         Args:
             base64_content_types (set): Set of HTTP Content-Types which should
             return a base64 encoded body. Enables returning binary content from
+            API Gateway.
+            base64_content_encoding (set): Set of HTTP Content-Encodings which should
+            return a base64 encoded body. Enables returning compressed/binary content from
             API Gateway.
         '''
         self.status = 500
@@ -64,6 +67,7 @@ class StartResponse(object):
         self.headers = []
         self.chunks = collections.deque()
         self.base64_content_types = set(base64_content_types or []) or set()
+        self.base64_content_encoding = set(base64_content_encoding or []) or set()
 
     def __call__(self, status, headers, exc_info=None):
         self.status_line = status
@@ -73,6 +77,9 @@ class StartResponse(object):
 
     def use_binary_response(self, headers, body):
         content_type = headers.get('Content-Type')
+        content_encoding = headers.get('Content-Encoding')
+        if content_encoding in self.base64_content_encoding:
+            return True
 
         if content_type and ';' in content_type:
             content_type = content_type.split(';')[0]
@@ -188,9 +195,14 @@ def select_impl(event, context):
         return environ, StartResponse_GW
 
 
-def response(app, event, context, base64_content_types=None):
+def response(
+    app, event, context, base64_content_types=None, base64_content_encoding=None
+):
     environ, StartResponse = select_impl(event, context)
 
-    sr = StartResponse(base64_content_types=base64_content_types)
+    sr = StartResponse(
+        base64_content_types=base64_content_types,
+        base64_content_encoding=base64_content_encoding,
+    )
     output = app(environ(event, context), sr)
     return sr.response(output)
