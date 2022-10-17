@@ -67,7 +67,7 @@ class StartResponse(object):
         self.headers = []
         self.chunks = collections.deque()
         self.base64_content_types = set(base64_content_types or []) or set()
-        self.base64_content_encoding = set(base64_content_encoding or []) or set()
+        self.base64_content_encoding = set(base64_content_encoding or ["br", "gzip", "deflate"]) or set()
 
     def __call__(self, status, headers, exc_info=None):
         self.status_line = status
