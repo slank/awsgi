@@ -161,6 +161,29 @@ class TestAwsgi(unittest.TestCase):
         self.assertTrue(result["isBase64Encoded"])
         self.assertEqual(result["body"], 'iVBORw0KGgoAAAANSUhEUgAAAMg=')
 
+    def test_response_base64_content_encoding(self):
+        event = {
+            "path": "/compressed.json",
+            "httpMethod": "GET",
+            "headers": {
+                "Accept": "application/json,*/*;q=0.8",
+                "X-Forwarded-For": "first, second",
+                "X-Forwarded-Port": "12345",
+                "X-Forwarded-Proto": "https",
+            },
+        }
+        context = object()
+        sr = awsgi.StartResponse(
+            base64_content_encoding={"br", "gzip", "deflate"}
+        )
+        sr("200 OK", [("Content-Type", "application/json"), ("Content-Encoding", "gzip")])
+        output = BytesIO(b'\x1f\x8b\x08\x00(=Mc\x02\xff\xaaV\xcaH\xcd\xc9\xc9W\xb2RP*\xcf/\xcaIQ\xaa\x05\x00\x00\x00\xff\xff\x03\x00"\xae\xa3\x86\x12\x00\x00\x00')
+
+        result = sr.response(output)
+        self.assertTrue(result["isBase64Encoded"])
+        self.assertEqual(result["body"], 'H4sIACg9TWMC/6pWykjNyclXslJQKs8vyklRqgUAAAD//wMAIq6jhhIAAAA=')
+
+
     def test_impl_selection_elb(self):
         event = {
             "requestContext": {
