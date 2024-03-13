@@ -1,3 +1,9 @@
+===========================================
+Archived - Please use a fork or alternative
+===========================================
+
+(See `Pull Requests <https://github.com/slank/awsgi/pulls?q=is%3Apr>`_ and `Issues <https://github.com/slank/awsgi/issues?q=is%3Aissue>`_ for suggestions)
+
 =====
 AWSGI
 =====
